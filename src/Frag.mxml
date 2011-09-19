@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ Free Rice Avant Garde - A Bot Experiment
+ Copyright (C) 2011, Sandeep Gupta
+ http://www.sangupta.com/projects/frag
+
+ The file is licensed under the the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+ See the License for the specific language governing permissions and
+ limitations under the License.
+
+ @author Sandeep Gupta
+ @since 19 Sep 2011
+-->
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   width="800" height="600" 
+					   initialize="onInit(event)"
+					   showStatusBar="false">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.sangupta.freerice.FreeRiceHelper;
+			
+			import flash.utils.setTimeout;
+			
+			import mx.events.FlexEvent;
+			import mx.utils.StringUtil;
+			
+			private var stop:Boolean = false;
+			
+			private static const GAME_URL:String = "http://beta.freerice.com";
+			
+			private static const USER_AGENT:String = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/534.15 (KHTML, like Gecko) Chrome/10.0.612.3 Safari/534.15';
+			
+			/**
+			 * Pause interval to wait after answering a question and before attempting the second.
+			 */
+			private static const QUESTION_GAP:uint = 3; // in seconds
+			
+			/**
+			 * Interval after which a retry to answer a question is made.
+			 */
+			private static const RETRY_GAP:uint = 1; // in seconds
+			
+			private function startPlaying():void {
+				answerTheQuestion();
+			}
+			
+			[Bindable]
+			private var answeredQuestions:uint = 0;
+			
+			private var lastQuestion:FreeRiceHelper = null;
+			
+			private function answerTheQuestion():void {
+				var helper:FreeRiceHelper = new FreeRiceHelper(this.html);
+				var answerIndex:uint = helper.getAnswerIndex();
+				lastQuestion = helper;
+				
+				var submit:Function = this.html.htmlLoader.window.ExternalGame.submitAnswer;
+				if(submit != null) {
+					submit(answerIndex);
+					++answeredQuestions;
+				}
+				
+				setTimeout(checkForNewQuestion, QUESTION_GAP * 1000);
+			}
+			
+			private function checkForNewQuestion():void {
+				var test:FreeRiceHelper = new FreeRiceHelper(this.html);
+				// check if previous answer was correct or not
+				var correct:Boolean = test.checkIfLastAnswerCorrect();
+				if(!correct) {
+					// store the previous answer
+					var correctAnswer:String = test.getCorrectAnswer();
+					lastQuestion.saveCorrectAnswer(correctAnswer);
+				}
+				
+				// see in which mode are we
+				if(this.stop) {
+					return;
+				}
+				
+				// check for new question
+				if(!test.equals(lastQuestion)) {
+					answerTheQuestion();
+				} else {
+					// fire another timer of 1 second
+					setTimeout(checkForNewQuestion, RETRY_GAP * 1000);
+				}
+			}
+
+			protected function onInit(event:FlexEvent):void {
+				this.html.addEventListener(Event.COMPLETE, completeListener);
+			}
+
+			private function completeListener(event:Event):void {
+				this.startButton.enabled = true;
+			}
+			
+			private function stopResume():void {
+				this.stop = !this.stop;
+				if(this.stop) {
+					this.stopOrResumeButton.label = 'Resume';
+				} else {
+					this.stopOrResumeButton.label = 'Stop!';
+					setTimeout(checkForNewQuestion, RETRY_GAP * 1000);
+				}
+			}
+		]]>
+	</fx:Script>
+	
+	<s:layout>
+		<s:VerticalLayout paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" />
+	</s:layout>
+	
+	<mx:HTML id="html" width="100%" height="100%" location="{GAME_URL}" userAgent="{USER_AGENT}"/>
+	
+	<s:HGroup width="100%">
+		<s:Button id='startButton' label="Start Playing :)" click="startPlaying();" enabled="false" />
+		
+		<s:Button id="stopOrResumeButton" label="Stop!" click="stopResume();" />
+		
+		<s:Label text="Answered till now: " />
+		<s:Label text="{this.answeredQuestions}" />
+	</s:HGroup>
+
+</s:WindowedApplication>
