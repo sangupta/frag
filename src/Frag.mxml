@@ -23,7 +23,7 @@
 <s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
 					   xmlns:s="library://ns.adobe.com/flex/spark" 
 					   xmlns:mx="library://ns.adobe.com/flex/mx"
-					   width="800" height="600" 
+					   width="750" height="540" 
 					   initialize="onInit(event)"
 					   showStatusBar="false">
 	<fx:Declarations>
@@ -34,10 +34,7 @@
 		<![CDATA[
 			import com.sangupta.freerice.FreeRiceHelper;
 			
-			import flash.utils.setTimeout;
-			
 			import mx.events.FlexEvent;
-			import mx.utils.StringUtil;
 			
 			private var stop:Boolean = false;
 			
@@ -102,6 +99,9 @@
 				}
 			}
 
+			/**
+			 * Initialize this application and configure essentials
+			 */
 			protected function onInit(event:FlexEvent):void {
 				this.html.addEventListener(Event.COMPLETE, completeListener);
 			}
