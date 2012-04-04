@@ -1,6 +1,3 @@
-FRAG
-====
-
 FRAG or Free Rice Avant Garde is my first experiment creating an automated bot for the [Free Rice](http://freerice.com) online game. It throws multiple-choice questions on varied subjects the player.  For every correct answer the site donates 10-20 grains of rice to the World Food Programme to help end hunger.
 
 I have played the game a lot in the past, but changing priorities in life made me devote less and less time. Necessity they say is the mother of all invention - thus the birth of this bot. The bot has the capability to build its own memory when an answer to a question is not known. In such a case, the bot chooses an answer at random and then scans the next page which provides the correct answer. The correct answer is stored in the games database. Using this technique increases the games accuracy.
